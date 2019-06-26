@@ -1,0 +1,12 @@
+---
+
+- name: Clone source github.com/containernetworking/plugins
+  git:
+    repo: https://github.com/containernetworking/plugins
+    dest: "{{ cni_plugins_dir }}"
+    update: no
+
+- name: Build CNI plugins
+  shell: "./build_linux.sh"
+  args:
+    chdir: "{{ cni_plugins_dir }}"

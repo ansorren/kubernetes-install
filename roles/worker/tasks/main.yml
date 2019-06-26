@@ -13,10 +13,9 @@
 
 - name: Write cni plugins
   copy:
-    src: "{{ cni_plugins_location }}"
+    src: "{{ cni_plugins_dir }}/bin/"
     dest: /opt/cni/bin
     mode: 0755
-  tags: cni_test
 
 - name: Write config directories
   file:

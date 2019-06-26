@@ -1,5 +1,8 @@
 ---
 
+- name: Get CNI plugins
+  include_tasks: build-cni-plugins.yml
+
 - name: Gather facts from all hosts
   setup:
     gather_subset:
