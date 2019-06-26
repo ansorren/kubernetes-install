@@ -1,0 +1,133 @@
+---
+
+- name: Downloading kubernetes binaries
+  get_url:
+    url: "{{ kube_download_url_base }}/{{ item }}"
+    dest: /usr/local/bin/{{ item }}
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: Create config directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /etc/kubernetes
+
+- name: Write CA certificate and key
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "{{ config_base }}/ca.pem"
+      dest: "/etc/kubernetes/ca.pem"
+    - src: "{{ config_base }}/ca-key.pem"
+      dest: "/etc/kubernetes/ca-key.pem"
+
+- name: Write kube-apiserver systemd unit
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "{{ config_base }}/kube-apiserver-{{ inventory_hostname }}.service"
+      dest: /etc/systemd/system/kube-apiserver.service
+  notify:
+    - systemd_daemon_reload
+    - restart_kube_apiserver
+
+- name: Write kube-apiserver config files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "{{ config_base }}/apiserver-{{ inventory_hostname }}.pem"
+      dest: "/etc/kubernetes/apiserver.pem"
+    - src: "{{ config_base }}/apiserver-{{ inventory_hostname }}-key.pem"
+      dest: "/etc/kubernetes/apiserver-key.pem"
+    - src: "{{ config_base }}/kubernetes-client.pem"
+      dest: "/etc/kubernetes/kubernetes-client.pem"
+    - src: "{{ config_base }}/kubernetes-client-key.pem"
+      dest: "/etc/kubernetes/kubernetes-client-key.pem"
+    - src: "{{ config_base }}/etcd-client.pem"
+      dest: "/etc/kubernetes/etcd-client.pem"
+    - src: "{{ config_base }}/etcd-client-key.pem"
+      dest: "/etc/kubernetes/etcd-client-key.pem"
+  notify:
+    - restart_kube_apiserver
+
+- name: Write kube-controller-manager config files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "{{ config_base }}/controller-manager.pem"
+      dest: "/etc/kubernetes/controller-manager.pem"
+    - src: "{{ config_base }}/controller-manager-key.pem"
+      dest: "/etc/kubernetes/controller-manager-key.pem"
+    - src: "{{ config_base }}/controller-manager.kubeconfig"
+      dest: "/etc/kubernetes/controller-manager.kubeconfig"
+    - src: "{{ config_base }}/service-accounts.pem"
+      dest: "/etc/kubernetes/service-accounts.pem"
+    - src: "{{ config_base }}/service-accounts-key.pem"
+      dest: "/etc/kubernetes/service-accounts-key.pem"
+  notify:
+    - restart_kube_controller_manager
+
+- name: Write kube-controller-manager systemd unit
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "{{ config_base }}/kube-controller-manager-{{ inventory_hostname }}.service"
+      dest: /etc/systemd/system/kube-controller-manager.service
+  notify:
+    - systemd_daemon_reload
+    - restart_kube_controller_manager
+
+- name: Write kube-scheduler config files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "kube-scheduler.yml"
+      dest: "/etc/kubernetes/scheduler.yml"
+    - src: "{{ config_base }}/scheduler.kubeconfig"
+      dest: "/etc/kubernetes/scheduler.kubeconfig"
+  notify:
+    - restart_kube_scheduler
+
+- name: Write kube-scheduler systemd unit
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - src: "{{ config_base }}/kube-scheduler-{{ inventory_hostname }}.service"
+      dest: /etc/systemd/system/kube-scheduler.service
+  notify:
+    - systemd_daemon_reload
+    - restart_kube_scheduler
+
+- name: Installation completed
+  debug:
+    msg: "Enabling '{{ inventory_hostname }}' ..."
+  notify:
+    - enable_master_services

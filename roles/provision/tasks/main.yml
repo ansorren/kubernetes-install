@@ -1,0 +1,45 @@
+---
+
+- name: Wait for kube-apiserver
+  wait_for:
+    host: "{{ kube_apiservice_external_fqdn }}"
+    port: 6443
+    delay: 3
+
+- include_tasks: bstoken.yml
+- include_tasks: permissions.yml
+
+# - name: Reboot nodes
+#   reboot:
+#     post_reboot_delay: 15
+#   delegate_to: "{{ item }}"
+#   with_inventory_hostnames:
+#     - masters
+#     - workers
+
+- name: Start kubelets
+  service:
+    name: kubelet
+    state: started
+  delegate_to: "{{ item }}"
+  with_inventory_hostnames:
+    - masters
+    - workers
+
+- name: Wait for kubelets to become Ready
+  k8s:
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    kind: Node
+    name: "{{ hostvars[item]['ansible_hostname'] }}"
+    wait: yes
+    wait_condition:
+      reason: KubeletReady
+      type: Ready
+      status: "True"
+    wait_timeout: 120
+  with_inventory_hostnames:
+    - masters
+    - workers
+
+- include_tasks: csr.yml
+- include_tasks: label.yml

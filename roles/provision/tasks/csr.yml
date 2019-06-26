@@ -1,0 +1,20 @@
+---
+
+#
+# Do we need to wait for kubelet server CSRs?
+#
+
+- name: List all pending CSRs
+  shell:
+    cmd: |
+      /usr/bin/kubectl --kubeconfig={{ config_base }}/admin.kubeconfig \
+      get csr | awk '/Pending/ {print $1}'
+  register: csrs
+
+- name: Approve pending CSRs
+  shell:
+    cmd: |
+      /usr/bin/kubectl --kubeconfig={{ config_base }}/admin.kubeconfig \
+      certificate approve {{ item }}
+  with_items:
+    - "{{ csrs.stdout_lines }}"

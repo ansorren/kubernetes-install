@@ -1,0 +1,27 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Install tools used by installer
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - python-netaddr
+        - python-openshift
+
+    - name: Downloading kubectl binary
+      get_url:
+        url: "{{ kube_download_url_base }}/kubectl"
+        dest: /usr/bin/kubectl.{{ kube_version }}
+        mode: 0755
+      with_items:
+        - kubectl
+
+    - name: Create link to kubernetes client
+      file:
+        src: /usr/bin/kubectl.{{kube_version}}
+        dest: /usr/bin/kubectl
+        state: link

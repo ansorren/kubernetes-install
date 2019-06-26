@@ -1,0 +1,21 @@
+---
+
+- name: Systemd daemon reload
+  systemd:
+    daemon_reload: True
+  listen: "systemd_daemon_reload"
+
+- name: Restarting kubelet service
+  service:
+    name: kubelet
+    state: restarted
+  listen: "restart_kubelet"
+
+- name: Enable worker services
+  service:
+    name: "{{ item }}"
+    # state: started
+    enabled: yes
+  with_items:
+    - kubelet
+  listen: "enable_worker_services"

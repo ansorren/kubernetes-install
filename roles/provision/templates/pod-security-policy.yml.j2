@@ -1,0 +1,104 @@
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+spec:
+  fsGroup:
+    rule: RunAsAny
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - '*'
+  allowedCapabilities:
+  - '*'
+  hostPID: true
+  hostIPC: true
+  hostNetwork: true
+  hostPorts:
+  - min: 1
+    max: 65536
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: privileged-service-account
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - privileged
+  verbs:
+  - use
+
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+  - ALL
+  fsGroup:
+    rule: RunAsAny
+    ranges:
+    - min: 1
+      max: 65535
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+    ranges:
+    - min: 1
+      max: 65535
+  volumes:
+  - 'emptyDir'
+  - 'secret'
+  - 'downwardAPI'
+  - 'configMap'
+  - 'persistentVolumeClaim'
+  - 'projected'
+  hostPID: false
+  hostIPC: false
+  hostNetwork: false
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: restricted-service-account
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - restricted
+  verbs:
+  - use
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: restricted-service-account
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: restricted-service-account
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts

@@ -1,0 +1,34 @@
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cniBinDir: /opt/cni/bin
+cgroupDriver: systemd
+kubeletCgroups: /system.slice
+runtimeCgroups: /system.slice
+address: {{ hostvars[nodename]['ansible_default_ipv4']['address'] }}
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: "/var/lib/kubelet/ca.pem"
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+clusterDomain: "cluster.local"
+clusterDNS:
+- {{ kube_services_subnet | next_nth_usable(10) }}
+runtimeRequestTimeout: "15m"
+evictionHard:
+  imagefs.available: 15%
+  memory.available: 100Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+featureGates:
+  RotateKubeletClientCertificate: true
+  RotateKubeletServerCertificate: true
+  DynamicKubeletConfig: true
+rotateCertificates: true
+rotateServerCertificates: true

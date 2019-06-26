@@ -1,0 +1,87 @@
+---
+
+- name: Grant system:node-bootstrapper role to system:bootstrappers Group
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: node-bootstrapper
+      subjects:
+      - kind: Group
+        name: system:bootstrappers
+        apiGroup: rbac.authorization.k8s.io
+      roleRef:
+        kind: ClusterRole
+        name: system:node-bootstrapper
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Autoapprove CSRs for system:bootstrappers Group
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: auto-approve-nodeclient
+      subjects:
+      - kind: Group
+        name: system:bootstrappers
+        apiGroup: rbac.authorization.k8s.io
+      roleRef:
+        kind: ClusterRole
+        name: system:certificates.k8s.io:certificatesigningrequests:nodeclient
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Autoapprove CSRs for system:nodes Group
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: auto-approve-selfnodeclient
+      subjects:
+      - kind: Group
+        name: system:nodes
+        apiGroup: rbac.authorization.k8s.io
+      roleRef:
+        kind: ClusterRole
+        name: system:certificates.k8s.io:certificatesigningrequests:selfnodeclient
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Delete bootstrap token if exist
+  k8s:
+    state: absent
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: bootstrap-token-2b00bs
+        namespace: kube-system
+      type: bootstrap.kubernetes.io/token
+
+- name: Create a bootstrap token
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: bootstrap-token-2b00bs
+        namespace: kube-system
+      type: bootstrap.kubernetes.io/token
+      stringData:
+        description: "The default bootstrap token"
+        token-id: 2b00bs
+        token-secret: "{{ lookup('file', tokenfile) }}"
+        usage-bootstrap-authentication: "true"
+        usage-bootstrap-signing: "true"
+  vars:
+    tokenfile: "{{ config_base }}/bootstrap-token.txt"

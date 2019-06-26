@@ -1,0 +1,21 @@
+[Unit]
+Description=Kubernetes Kubelet Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/var/lib/kubelet
+ExecStart=/usr/local/bin/kubelet \
+  --config=/var/lib/kubelet/kubelet-config.yml \
+  --kubeconfig=/var/lib/kubelet/kubelet.kubeconfig \
+  --bootstrap-kubeconfig=/var/lib/kubelet/bootstrap.kubeconfig \
+  --dynamic-config-dir=/var/lib/kubelete/dynamic-config \
+  --rotate-server-certificates \
+  --network-plugin=cni \
+  --v=0
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+---
+
+- name: Systemd daemon reload
+  systemd:
+    daemon_reload: True
+  listen: "systemd_daemon_reload"
+
+- name: Restarting kube-apiserver service
+  service:
+    name: kube-apiserver
+    state: restarted
+  listen: "restart_kube_apiserver"
+
+- name: Restarting kube-controller-manager service
+  service:
+    name: kube-controller-manager
+    state: restarted
+  listen: "restart_kube_controller_manager"
+
+- name: Restarting kube-scheduler service
+  service:
+    name: kube-scheduler
+    state: restarted
+  listen: "restart_kube_scheduler"
+
+- name: Enable master services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  listen: "enable_master_services"

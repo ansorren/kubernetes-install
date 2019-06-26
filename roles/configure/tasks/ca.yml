@@ -1,0 +1,29 @@
+---
+
+- name: Create config directory
+  file:
+    path: "{{ config_base }}"
+    state: directory
+
+- name: Create CA config
+  template:
+    src: ca-config.json.j2
+    dest: "{{ config_base }}/ca-config.json"
+
+- name: Generate CA
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert -initca - | cfssljson -bare ca
+      {
+        "CN": "Kubernetes",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "lab.lex" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+    creates: ca.pem
+  register: new_CA
+  when: True # TODO: make use of certs defined in inventory

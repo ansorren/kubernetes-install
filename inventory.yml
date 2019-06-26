@@ -1,0 +1,22 @@
+all:
+  vars:
+    cluster_name: test
+    kube_version: v1.14.1
+    # TODO:
+    # cluster_ca_cert: /tmp/ca.crt
+    # cluster_ca_key: /tmp/ca.key
+    kube_apiservice_external_fqdn: "api-service.lab.lex"
+    kube_services_subnet: "10.13.0.0/24"
+    kube_cluster_cidr: "10.200.0.0/16"
+  hosts:
+    localhost:
+  children:
+    etcd:
+      hosts:
+        master1.lab.lex:
+    masters:
+      hosts:
+        master1.lab.lex:
+    workers:
+      hosts:
+        worker1.lab.lex:

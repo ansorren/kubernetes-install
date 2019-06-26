@@ -1,0 +1,7 @@
+---
+
+- name: Generate etcd config
+  template:
+    src: etcd.conf.j2
+    dest: "{{ config_base }}/etcd-{{ nodename }}.conf"
+  delegate_to: localhost

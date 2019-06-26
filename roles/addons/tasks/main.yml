@@ -1,0 +1,26 @@
+---
+
+- name: Install kube-router
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'kube-router.yml.j2') }}"
+  tags:
+    - kube-router
+    - essential
+
+- name: Install coredns
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'coredns.yml.j2') }}"
+  tags:
+    - coredns
+    - essential
+
+- name: Install Dashboard
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'dashboard.yml.j2') }}"
+  tags: dashboard

@@ -1,0 +1,21 @@
+---
+
+- name: Generate systemd unit files / {{ nodename }}
+  template:
+    src: "{{ item }}.service.j2"
+    dest: "{{ config_base }}/{{ item }}-{{ nodename }}.service"
+  with_items:
+    - kubelet
+
+- name: Generate kubelet-config.yml / {{ nodename }}
+  template:
+    src: kubelet-config.yml.j2
+    dest: "{{ config_base }}/kubelet-config-{{ nodename }}.yml"
+
+- name: Generate kubelet-bootstrap.kubeconfig / {{ nodename }}
+  template:
+    src: kubelet-bootstrap.kubeconfig.j2
+    dest: "{{ config_base }}/kubelet-bootstrap.kubeconfig"
+  vars:
+    tokenfile: "{{ config_base }}/bootstrap-token.txt"
+  run_once: yes

@@ -1,0 +1,43 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=network.target
+After=etcd.service
+
+[Service]
+ExecStart=/usr/local/bin/kube-apiserver \
+  --bind-address=0.0.0.0 \
+  --advertise-address={{ hostvars[nodename]['ansible_default_ipv4']['address'] }} \
+  --etcd-servers=
+    {%- set i = groups['masters'].index(nodename) -%}
+    {%- set etcd_members = groups['etcd'][i:] + groups['etcd'][:i] -%}
+    {%- for member in etcd_members -%}
+      https://{{ hostvars[member]['ansible_default_ipv4']['address'] }}:2379
+      {%- if not loop.last -%}
+      ,
+      {%- endif -%}
+    {%- endfor %} \
+  --service-cluster-ip-range={{ kube_services_subnet }} \
+  --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy \
+  --etcd-cafile=/etc/kubernetes/ca.pem \
+  --etcd-certfile=/etc/kubernetes/etcd-client.pem \
+  --etcd-keyfile=/etc/kubernetes/etcd-client-key.pem \
+  --authorization-mode=Node,RBAC \
+  --enable-bootstrap-token-auth=true \
+  --client-ca-file=/etc/kubernetes/ca.pem \
+  --tls-cert-file=/etc/kubernetes/apiserver.pem \
+  --tls-private-key-file=/etc/kubernetes/apiserver-key.pem \
+  --service-account-key-file=/etc/kubernetes/service-accounts.pem \
+  --kubelet-certificate-authority=/etc/kubernetes/ca.pem \
+  --kubelet-client-certificate=/etc/kubernetes/kubernetes-client.pem \
+  --kubelet-client-key=/etc/kubernetes/kubernetes-client-key.pem \
+  --kubelet-https=true \
+  --allow-privileged \
+  --v=0
+Restart=on-failure
+RestartSec=5
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

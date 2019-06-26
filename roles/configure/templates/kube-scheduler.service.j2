@@ -1,0 +1,16 @@
+[Unit]
+Description=Kubernetes Scheduler Plugin
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=kube-apiserver.service
+Requires=kube-apiserver.service
+
+[Service]
+ExecStart=/usr/local/bin/kube-scheduler \
+  --config=/etc/kubernetes/scheduler.yml \
+  --v=0
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

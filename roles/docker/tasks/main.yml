@@ -1,0 +1,17 @@
+---
+
+- name: Install Docker
+  yum:
+    name: docker
+    state: present
+
+- name: Configure docker storage
+  template:
+    src: docker-storage-setup.j2
+    dest: /etc/sysconfig/docker-storage-setup
+
+- name: Enable Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes

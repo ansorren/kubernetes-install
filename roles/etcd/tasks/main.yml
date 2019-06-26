@@ -1,0 +1,38 @@
+---
+
+- name: Install etcd
+  package:
+    name: etcd
+    state: present
+
+- name: Copy etcd certificates and configuration
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: etcd
+    group: etcd
+  with_items:
+    - src: "{{ config_base }}/ca.pem"
+      dest: "/etc/etcd/ca.pem"
+    - src: "{{ config_base }}/etcd-{{ inventory_hostname }}.pem"
+      dest: "/etc/etcd/etcd.pem"
+    - src: "{{ config_base }}/etcd-{{ inventory_hostname }}-key.pem"
+      dest: "/etc/etcd/etcd-key.pem"
+    - src: "{{ config_base }}/etcd-peer-{{ inventory_hostname }}.pem"
+      dest: "/etc/etcd/etcd-peer.pem"
+    - src: "{{ config_base }}/etcd-peer-{{ inventory_hostname }}-key.pem"
+      dest: "/etc/etcd/etcd-peer-key.pem"
+    - src: "{{ config_base }}/etcd-client.pem"
+      dest: "/etc/etcd/etcd-client.pem"
+    - src: "{{ config_base }}/etcd-client-key.pem"
+      dest: "/etc/etcd/etcd-client-key.pem"
+    - src: "{{ config_base }}/etcd-{{ inventory_hostname }}.conf"
+      dest: "/etc/etcd/etcd.conf"
+  notify:
+    - restart_etcd
+
+- name: Enable etcd service
+  service:
+    name: etcd
+    state: started
+    enabled: True

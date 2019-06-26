@@ -1,0 +1,197 @@
+---
+
+- name: Generate kube-admin certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=client - | cfssljson -bare admin
+      {
+        "CN": "admin",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "system:masters", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+
+- name: Generate kube-apiservice certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=server - | cfssljson -bare apiserver-{{ item }}
+      {
+        "CN": "kubernetes",
+        "hosts": [
+          "{{ kube_apiservice_external_fqdn }}",
+          "{{ kube_services_subnet | ipaddr('first_usable') }}",
+          "{{ hostvars[item]['ansible_fqdn'] }}",
+          "{{ hostvars[item]['ansible_default_ipv4']['address'] }}",
+          "127.0.0.1",
+          "kubernetes",
+          "kubernetes.default",
+          "kubernetes.default.svc",
+          "kubernetes.default.svc.cluster.local"
+        ],
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "Kubernetes", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+  with_inventory_hostnames:
+    - masters
+
+- name: Generate kubernetes-client certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=client - | cfssljson -bare kubernetes-client
+      {
+        "CN": "kubernetes",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "Kubernetes", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+
+- name: Generate kube-scheduler certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=client - | cfssljson -bare scheduler
+      {
+        "CN": "system:kube-scheduler",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "system:kube-scheduler", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+
+- name: Generate kube-controller-manager certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=client - | cfssljson -bare controller-manager
+      {
+        "CN": "system:kube-controller-manager",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "system:kube-controller-manager", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+
+- name: Generate kube-service-accounts certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=kubernetes - | cfssljson -bare service-accounts
+      {
+        "CN": "service-accounts",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "Kubernetes", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+
+- name: Generate kube-proxy certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=client - | cfssljson -bare kube-proxy
+      {
+        "CN": "system:kube-proxy",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "system:node-proxier", "OU": "LAB" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+
+- name: Generate etcd-server certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=kubernetes - | cfssljson -bare etcd-{{ item }}
+      {
+        "CN": "{{ item }}",
+        "hosts": [
+          "{{ hostvars[item]['ansible_fqdn'] }}",
+          "{{ hostvars[item]['ansible_default_ipv4']['address'] }}",
+          "127.0.0.1"
+        ],
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "Kubernetes" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+  with_inventory_hostnames:
+    - etcd
+
+- name: Generate etcd-peer certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=kubernetes - | cfssljson -bare etcd-peer-{{ item }}
+      {
+        "CN": "{{ item }}",
+        "hosts": [
+          "{{ hostvars[item]['ansible_fqdn'] }}",
+          "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+        ],
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "Kubernetes" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"
+  with_inventory_hostnames:
+    - etcd
+
+- name: Generate etcd-client certificate
+  shell:
+    cmd: |
+      cat <<EOF | cfssl gencert \
+      -ca=ca.pem -ca-key=ca-key.pem \
+      -config=ca-config.json -profile=client - | cfssljson -bare etcd-client
+      {
+        "CN": "etcd-client",
+        "key": { "algo": "rsa", "size": 2048 },
+        "names": [
+          { "O": "Kubernetes" }
+        ]
+      }
+      EOF
+  args:
+    chdir: "{{ config_base }}"

@@ -1,0 +1,55 @@
+---
+
+- name: Gather facts from all hosts
+  setup:
+    gather_subset:
+    - network
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  with_inventory_hostnames:
+    - masters
+    - workers
+    - etcd
+
+- name: Set CA
+  include_tasks: ca.yml
+
+- name: Generate kubernetes certificates
+  include_tasks: pki.yml
+  when: new_CA.changed == True
+
+- name: Generating etcd config files
+  include: etcd.yml
+  with_items:
+    - "{{ groups['etcd'] }}"
+  loop_control:
+    loop_var: nodename
+
+- name: Create kubeconfig files
+  include_tasks: kubeconfig.yml
+  when: new_CA.changed == True
+
+- name: Generate secrets encryption key
+  shell: "head -c 32 /dev/urandom | base64 > {{ config_base }}/encryption-key.txt"
+  args:
+    creates: "{{ config_base }}/encryption-key.txt"
+
+- name: Generate bootstrap token
+  shell: "openssl rand -hex 8 > {{ config_base }}/bootstrap-token.txt"
+  args:
+    creates: "{{ config_base }}/bootstrap-token.txt"
+
+- name: Create masters config files
+  include_tasks: master.yml
+  with_items:
+    - "{{ groups['masters'] }}"
+  loop_control:
+    loop_var: nodename
+
+- name: Create workers config files
+  include: worker.yml
+  with_items:
+    - "{{ groups['masters'] }}"
+    - "{{ groups['workers'] }}"
+  loop_control:
+    loop_var: nodename

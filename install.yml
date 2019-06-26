@@ -1,0 +1,5 @@
+---
+
+- import_playbook: configure.yml
+- import_playbook: bootstrap.yml
+- import_playbook: addons.yml

@@ -1,0 +1,5 @@
+---
+
+config_base: "{{ inventory_dir }}/.cluster_configs/{{ cluster_name }}"
+kube_download_url_base: "https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/amd64"
+cni_plugins_location: "/root/go/src/github.com/containernetworking/plugins/bin/"
