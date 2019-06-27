@@ -10,3 +10,4 @@
   shell: "./build_linux.sh"
   args:
     chdir: "{{ cni_plugins_dir }}"
+    creates: "{{ cni_plugins_dir }}/bin"
