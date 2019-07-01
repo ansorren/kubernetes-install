@@ -1,6 +1,7 @@
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cniBinDir: /opt/cni/bin
+volumePluginDir: /var/lib/kubelet/volumeplugins
 cgroupDriver: systemd
 kubeletCgroups: /system.slice
 runtimeCgroups: /system.slice

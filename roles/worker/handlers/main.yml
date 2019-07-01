@@ -14,7 +14,7 @@
 - name: Enable worker services
   service:
     name: "{{ item }}"
-    # state: started
+    state: started
     enabled: yes
   with_items:
     - kubelet

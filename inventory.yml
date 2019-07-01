@@ -1,11 +1,11 @@
 all:
   vars:
-    cluster_name: test
-    kube_version: v1.14.1
+    cluster_name: kube-lab
+    kube_version: v1.15.0
     # TODO:
     # cluster_ca_cert: /tmp/ca.crt
     # cluster_ca_key: /tmp/ca.key
-    kube_apiservice_external_fqdn: "f30-api-server.lab.lex"
+    kube_apiservice_external_fqdn: "kube-apiserver.lab.lex"
     kube_services_subnet: "10.13.0.0/24"
     kube_cluster_cidr: "10.200.0.0/16"
   hosts:
@@ -13,10 +13,21 @@ all:
   children:
     etcd:
       hosts:
-        f30-master1.lab.lex:
+        master1.lab.lex:
     masters:
       hosts:
-        f30-master1.lab.lex:
+        master1.lab.lex:
     workers:
       hosts:
-        f30-worker1.lab.lex:
+        worker1.lab.lex:
+        worker2.lab.lex:
+        worker3.lab.lex:
+    fedora30:
+      hosts:
+        master1.lab.lex:
+        worker1.lab.lex:
+        worker2.lab.lex:
+        worker3.lab.lex:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+

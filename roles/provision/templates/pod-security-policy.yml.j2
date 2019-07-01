@@ -50,16 +50,22 @@ spec:
   requiredDropCapabilities:
   - ALL
   fsGroup:
-    rule: RunAsAny
+    rule: MustRunAs
     ranges:
     - min: 1
       max: 65535
   runAsUser:
-    rule: MustRunAsNonRoot
+    rule: MustRunAs
+    # MustRunAs - Requires at least one range to be specified.
+    # Uses the minimum value of the first range as the default.
+    # Validates against all ranges.
+    ranges:
+    - min: 1024
+      max: 65535
   seLinux:
     rule: RunAsAny
   supplementalGroups:
-    rule: RunAsAny
+    rule: MayRunAs
     ranges:
     - min: 1
       max: 65535

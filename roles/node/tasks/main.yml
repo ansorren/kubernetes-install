@@ -4,3 +4,31 @@
   selinux:
     policy: targeted
     state: permissive
+
+- name: Disable firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+# - name: Disable SWAP in fstab
+#   replace:
+#     path: /etc/fstab
+#     regexp: '^(.+?\sswap\s+sw\s+.*)$'
+#     replace: '# \1'
+
+- name: Disable swap
+  shell: swapoff --all
+
+- name: Create systemd.conf drop in directory
+  file:
+    path: /etc/systemd/system.conf.d
+    state: directory
+
+- name: Enable cpu accounting
+  copy:
+    src: kubelet-accounting.conf
+    dest: /etc/systemd/system.conf.d/kubelet-accounting.conf
+  notify:
+    - reboot_node

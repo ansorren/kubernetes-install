@@ -1,10 +1,10 @@
 ---
 
 - hosts:
-    - masters
-    - workers
+  - masters
+  - workers
   roles:
-  - node
+    - node
 
 - hosts: etcd
   roles:
@@ -14,9 +14,7 @@
   roles:
     - master
 
-- hosts:
-    - masters
-    - workers
+- hosts: workers
   roles:
     - worker
 

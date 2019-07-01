@@ -1,5 +1,7 @@
 ---
 
+- include_tasks: docker.yml
+
 - name: Downloading kubernetes worker binaries
   get_url:
     url: "{{ kube_download_url_base }}/{{ item }}"
