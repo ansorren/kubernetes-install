@@ -8,4 +8,4 @@ required tools:
 
 - python-openshift
 
-* build cni plugins *
+tested with fedora30 hosts

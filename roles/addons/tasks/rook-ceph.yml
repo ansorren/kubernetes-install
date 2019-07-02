@@ -1,0 +1,37 @@
+---
+
+- name: rook common
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'rook-ceph-common.yml.j2') }}"
+  tags: rook
+
+- name: rook psp
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'rook-ceph-psp.yml.j2') }}"
+  tags: rook
+
+- name: rook operator
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'rook-ceph-operator.yml.j2') }}"
+  tags: rook
+
+- name: rook cluster
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'rook-ceph-cluster.yml.j2') }}"
+  tags: rook
+
+- name: Create StorageClass
+  k8s:
+    state: present
+    kubeconfig: "{{ config_base }}/admin.kubeconfig"
+    resource_definition: "{{ lookup('template', 'rook-ceph-storageclass.yml.j2') }}"
+  tags: rook
+

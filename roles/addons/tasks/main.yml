@@ -24,3 +24,8 @@
     kubeconfig: "{{ config_base }}/admin.kubeconfig"
     resource_definition: "{{ lookup('template', 'dashboard.yml.j2') }}"
   tags: dashboard
+
+# does not work with k8s module
+# do kubectl create instead
+# - include_tasks: rook-ceph.yml
+#   tags: rook

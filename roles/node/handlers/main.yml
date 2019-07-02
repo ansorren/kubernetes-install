@@ -3,4 +3,4 @@
 - name: Reboot node
   reboot:
     post_reboot_delay: 15
-  listen: "systemd_daemon_reload"
+  listen: "reboot_node"

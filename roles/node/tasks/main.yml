@@ -1,5 +1,22 @@
 ---
 
+#
+# Install libselinux-python or libselinux-python3
+# depending on ansible_python_interpreter
+#
+
+- name: Install python2-libselinux
+  package:
+    name: python2-libselinux
+    state: present
+  when: ansible_python_interpreter == "/usr/bin/python"
+
+- name: Install python3-libselinux
+  package:
+    name: python3-libselinux
+    state: present
+  when: ansible_python_interpreter == "/usr/bin/python3"
+
 - name: Disable SELinux
   selinux:
     policy: targeted
